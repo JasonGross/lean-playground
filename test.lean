@@ -38,18 +38,15 @@ lemma lift_lets_correct {A : Sort (u+1)} (v : let_inM A)
  : denote_let_inM v = denote_let_inM (lift_lets v)
 := by symmetry; apply denote_under_lets_correct
 
-meta def reify_to_let_in_pexpr_aux : expr → (pexpr → pexpr) → pexpr
-| (expr.elet n ty val body) f := let val' := reify_to_let_in_pexpr_aux val (λ x, ``(@let_inM.ret _ %%x)) in
-                                 let body' := reify_to_let_in_pexpr_aux body f in
-                                 let body' := expr.lam n binder_info.default (pexpr.of_expr ty) body' in
-                                 ``(@let_inM.bind %%ty _ %%val' %%body')
-| `(%%a + %%b) f := let a' := reify_to_let_in_pexpr_aux a (λ x, ``(@let_inM.ret _ %%x)) in
-                    let b' := reify_to_let_in_pexpr_aux b (λ x, ``(@let_inM.ret _ %%x)) in
-                    ``(@let_inM.app2 _ _ _ (λ a' b' , a' + b') %%a' %%b')
-| e f := f (pexpr.of_expr e)
-
-meta def reify_to_let_in_pexpr (e : expr) : pexpr := reify_to_let_in_pexpr_aux e (λ x , ``(@let_inM.ret _ %%x))
-
+meta def reify_to_let_in_pexpr : expr → pexpr
+| (expr.elet n ty val body) := let val' := reify_to_let_in_pexpr val in
+                               let body' := reify_to_let_in_pexpr body in
+                               let body' := expr.lam n binder_info.default (pexpr.of_expr ty) body' in
+                               ``(@let_inM.bind %%ty _ %%val' %%body')
+| `(%%a + %%b) := let a' := reify_to_let_in_pexpr a in
+                  let b' := reify_to_let_in_pexpr b in
+                  ``(@let_inM.app2 _ _ _ (λ a' b' , a' + b') %%a' %%b')
+| e := ``(@let_inM.ret _ %%e)
 
 meta def is_eq : expr → option (expr × expr × expr)
 | `(@eq %%α %%a %%b) := some (α, a, b)
