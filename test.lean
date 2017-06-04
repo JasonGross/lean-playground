@@ -1,9 +1,8 @@
-set_option profiler true
 def some_lets : ℕ → ℕ → ℕ
 | 0            v := v
 | (nat.succ n) v := let k := some_lets n v + some_lets n v in some_lets n k
 
-def some_unfolded_lets (n : ℕ) : Σ' v : ℕ , v = some_lets 5 n :=
+def some_unfolded_lets (n : ℕ) : Σ' v : ℕ , v = some_lets 6 n :=
 begin
   constructor; unfold some_lets; constructor
 end
@@ -67,6 +66,7 @@ meta def unify_reify_rhs_to_let_in : tactic unit :=
      end
 
 -- set_option debugger true
+set_option profiler true
 open tactic
 def some_lifted_lets (n : ℕ) : Σ' (v : ℕ), v = psigma.fst (some_unfolded_lets n) :=
 begin
